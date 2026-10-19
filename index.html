@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b0e14">
+    <meta name="description"
+        content="Minecraft Web Edition - 100% in-browser HTML5 voxel game with mobile touch controls and procedural terrain.">
+    <title>Minecraft HTML5 Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- WebGL 3D Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Centered Crosshair -->
+    <div id="crosshair"></div>
+
+    <!-- Top Bar HUD -->
+    <header id="topBar">
+        <div class="hud-info" id="debugOverlay">
+            <div id="debugFps">60 FPS</div>
+            <div id="debugCoords">XYZ: 0.0 / 20.0 / 0.0</div>
+            <div id="debugBlock">Looking at: None</div>
+        </div>
+        <div class="hud-actions">
+            <button class="hud-btn" id="btnModeToggle" aria-label="Toggle Mode">Mode: CREATIVE</button>
+            <button class="hud-btn" id="btnSettings" aria-label="Settings">⚙️</button>
+            <button class="hud-btn" id="btnFullscreen" aria-label="Fullscreen">⛶</button>
+        </div>
+    </header>
+
+    <!-- Survival Hearts & Hunger (hidden in creative) -->
+    <div id="hudHearts">
+        <div class="hearts-container">
+            <span class="heart-icon">❤️</span><span class="heart-icon">❤️</span><span class="heart-icon">❤️</span><span
+                class="heart-icon">❤️</span><span class="heart-icon">❤️</span>
+            <span class="heart-icon">❤️</span><span class="heart-icon">❤️</span><span class="heart-icon">❤️</span><span
+                class="heart-icon">❤️</span><span class="heart-icon">❤️</span>
+        </div>
+        <div class="hunger-container">
+            <span class="hunger-icon">🍗</span><span class="hunger-icon">🍗</span><span
+                class="hunger-icon">🍗</span><span class="hunger-icon">🍗</span><span class="hunger-icon">🍗</span>
+            <span class="hunger-icon">🍗</span><span class="hunger-icon">🍗</span><span
+                class="hunger-icon">🍗</span><span class="hunger-icon">🍗</span><span class="hunger-icon">🍗</span>
+        </div>
+    </div>
+
+    <!-- Mobile Touch Controls Layer -->
+    <div id="mobileControls">
+        <!-- Left Virtual Joystick Area -->
+        <div id="joystickArea">
+            <div id="joystickBase">
+                <div id="joystickStick"></div>
+            </div>
+        </div>
+
+        <!-- Right Touch Look Area -->
+        <div id="touchLookArea"></div>
+
+        <!-- Ergonomic Action Buttons -->
+        <div id="actionButtons">
+            <button class="action-btn" id="btnFly" aria-label="Toggle Flying">
+                🪽<span class="label">Fly</span>
+            </button>
+            <button class="action-btn" id="btnCam" aria-label="Toggle Camera">
+                👁️<span class="label">Cam</span>
+            </button>
+            <button class="action-btn" id="btnSneak" aria-label="Sneak / Descend">
+                ⬇️<span class="label">Down</span>
+            </button>
+
+            <button class="action-btn" id="btnMine" aria-label="Mine / Attack">
+                ⛏️<span class="label">Mine</span>
+            </button>
+            <button class="action-btn" id="btnPlace" aria-label="Place Block">
+                🧱<span class="label">Place</span>
+            </button>
+            <button class="action-btn" id="btnJump" aria-label="Jump / Fly Up">
+                🚀<span class="label">Jump</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hotbar at Bottom -->
+    <div id="hotbarContainer">
+        <div id="hotbar">
+            <div class="hotbar-slot selected" data-slot="0"></div>
+            <div class="hotbar-slot" data-slot="1"></div>
+            <div class="hotbar-slot" data-slot="2"></div>
+            <div class="hotbar-slot" data-slot="3"></div>
+            <div class="hotbar-slot" data-slot="4"></div>
+            <div class="hotbar-slot" data-slot="5"></div>
+            <div class="hotbar-slot" data-slot="6"></div>
+            <div class="hotbar-slot" data-slot="7"></div>
+            <div class="hotbar-slot" data-slot="8"></div>
+        </div>
+        <button id="btnOpenInventory" title="Open Inventory (E)" aria-label="Open Inventory">🎒</button>
+    </div>
+
+    <!-- Click to Play / Resume Prompt -->
+    <div id="clickToPlayPrompt">
+        <div class="start-box">
+            <h1 class="start-title">MINECRAFT</h1>
+            <p class="start-subtitle">
+                Desktop: WASD to Move &bull; Mouse to Look<br>
+                Left Click: Mine &bull; Right Click: Place<br>
+                Space: Jump / Double Space: Fly &bull; E: Inventory<br>
+                Mobile: Left Joystick to Move &bull; Right Drag to Look
+            </p>
+            <button class="start-btn" id="btnStartGame">PLAY GAME</button>
+        </div>
+    </div>
+
+    <!-- Creative Inventory Modal -->
+    <div class="modal-overlay" id="inventoryModal">
+        <div class="mc-dialog">
+            <div class="dialog-header">
+                <h2 class="dialog-title">Creative Inventory</h2>
+                <button class="dialog-close" id="btnCloseInventory">&times;</button>
+            </div>
+            <div class="inventory-grid" id="inventoryGrid">
+                <!-- Injected via textures.js & main.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="mc-dialog" style="min-width: 300px;">
+            <div class="dialog-header">
+                <h2 class="dialog-title">Game Settings</h2>
+                <button class="dialog-close" id="btnCloseSettings">&times;</button>
+            </div>
+            <div class="settings-body">
+                <div class="settings-row">
+                    <span>Sound Volume:</span>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.5">
+                </div>
+                <div class="settings-row">
+                    <span>Sensitivity:</span>
+                    <input type="range" id="sensSlider" min="0.2" max="3" step="0.1" value="1.0">
+                </div>
+                <button class="mc-btn" id="btnDayCycle">Time: Normal Cycle</button>
+                <button class="mc-btn" id="btnSaveWorld">💾 Save World</button>
+                <button class="mc-btn danger" id="btnResetWorld">⚠️ Reset World</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="three.min.js"></script>
+    <script src="js/simplex-noise.js"></script>
+    <script src="js/textures.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/controls.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // Handle start prompt
+        const startPrompt = document.getElementById("clickToPlayPrompt");
+        const startGame = () => {
+            startPrompt.style.display = "none";
+            if (window.soundEngine) window.soundEngine.resume();
+            const canvas = document.getElementById("gameCanvas");
+            if (!("ontouchstart" in window)) {
+                canvas.requestPointerLock?.();
+            }
+        };
+        document.getElementById("btnStartGame")?.addEventListener("click", startGame);
+        startPrompt?.addEventListener("click", (e) => {
+            if (e.target === startPrompt) startGame();
+        });
+    </script>
+</body>
+
+</html>

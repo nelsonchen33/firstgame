@@ -1,0 +1,624 @@
+/* ===================================================================
+   MINECRAFT HTML5 - STYLESHEET
+   Authentic retro voxel aesthetics, responsive mobile touch controls
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --mc-dark-border: #373737;
+  --mc-light-border: #ffffff;
+  --mc-bg-gray: #c6c6c6;
+  --mc-slot-bg: rgba(139, 139, 139, 0.55);
+  --mc-slot-selected: #ffffff;
+  --mc-accent-green: #5c912b;
+  --mc-font: 'Press Start 2P', monospace, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none; /* Prevents unwanted browser gestures and bounce scrolling */
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0b0e14;
+  font-family: var(--mc-font);
+  color: #ffffff;
+}
+
+/* 3D WebGL Canvas */
+#gameCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 1;
+}
+
+/* Pixel art rendering crispness */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* ===================================================================
+   CROSSHAIR
+   =================================================================== */
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#crosshair::before,
+#crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 1px #000;
+}
+
+#crosshair::before {
+  top: 7px;
+  left: 0;
+  width: 16px;
+  height: 2px;
+}
+
+#crosshair::after {
+  top: 0;
+  left: 7px;
+  width: 2px;
+  height: 16px;
+}
+
+/* ===================================================================
+   TOP HUD BAR & OVERLAYS
+   =================================================================== */
+#topBar {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.hud-info {
+  background: rgba(0, 0, 0, 0.45);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.6;
+  text-shadow: 1px 1px 0 #000;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hud-actions {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.hud-btn {
+  background: rgba(30, 30, 30, 0.7);
+  color: #fff;
+  border: 2px solid #555;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-family: inherit;
+}
+
+.hud-btn:hover {
+  background: rgba(60, 60, 60, 0.9);
+  border-color: #888;
+}
+
+.hud-btn:active {
+  transform: scale(0.94);
+  background: #222;
+}
+
+/* Survival Hearts & Hunger */
+#hudHearts {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 16px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.hearts-container, .hunger-container {
+  display: flex;
+  gap: 4px;
+}
+
+.heart-icon {
+  color: #e63946;
+  font-size: 14px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.hunger-icon {
+  color: #d4a373;
+  font-size: 14px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ===================================================================
+   HOTBAR (BOTTOM SCREEN)
+   =================================================================== */
+#hotbarContainer {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 25;
+}
+
+#hotbar {
+  display: flex;
+  background: rgba(40, 40, 40, 0.65);
+  border: 3px solid #1c1c1c;
+  border-radius: 6px;
+  padding: 3px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.hotbar-slot {
+  width: 44px;
+  height: 44px;
+  background: var(--mc-slot-bg);
+  border: 2px solid #5a5a5a;
+  border-top-color: #373737;
+  border-left-color: #373737;
+  border-bottom-color: #fff;
+  border-right-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.hotbar-slot img {
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+}
+
+.hotbar-slot.selected {
+  outline: 3px solid #ffffff;
+  outline-offset: 1px;
+  background: rgba(200, 200, 200, 0.6);
+  z-index: 2;
+  transform: scale(1.08);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.hotbar-slot:active {
+  transform: scale(0.95);
+}
+
+#btnOpenInventory {
+  width: 46px;
+  height: 46px;
+  background: #4a4a4a;
+  border: 2px solid #888;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+#btnOpenInventory:active {
+  transform: scale(0.92);
+}
+
+/* ===================================================================
+   MOBILE TOUCH CONTROLS (VIRTUAL JOYSTICK & ACTION BUTTONS)
+   =================================================================== */
+#mobileControls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 12;
+  pointer-events: none;
+}
+
+/* Left Joystick Area */
+#joystickArea {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45vw;
+  height: 70vh;
+  pointer-events: auto;
+}
+
+#joystickBase {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  margin-left: -60px;
+  margin-top: -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.4) 70%);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  left: 90px;
+  bottom: 90px;
+}
+
+#joystickStick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  margin-left: -25px;
+  margin-top: -25px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+/* Right Touch Drag Area for Camera Look */
+#touchLookArea {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55vw;
+  height: 75vh;
+  pointer-events: auto;
+}
+
+/* Action Buttons Grid (Bottom Right) */
+#actionButtons {
+  position: absolute;
+  right: 16px;
+  bottom: 78px;
+  display: grid;
+  grid-template-columns: repeat(3, 56px);
+  grid-gap: 12px;
+  pointer-events: auto;
+}
+
+.action-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(35, 35, 35, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: transform 0.08s, background 0.1s;
+}
+
+.action-btn span.label {
+  font-size: 7px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+.action-btn.active,
+.action-btn:active {
+  background: rgba(92, 145, 43, 0.85);
+  border-color: #fff;
+  transform: scale(0.92);
+}
+
+.action-btn.active-state {
+  background: rgba(50, 120, 220, 0.85);
+  border-color: #8ecae6;
+}
+
+/* Primary Break / Mine button highlighted */
+#btnMine {
+  background: rgba(180, 50, 50, 0.7);
+  border-color: rgba(255, 120, 120, 0.6);
+}
+
+#btnPlace {
+  background: rgba(50, 140, 50, 0.7);
+  border-color: rgba(120, 255, 120, 0.6);
+}
+
+/* ===================================================================
+   CLICK TO PLAY / START SCREEN OVERLAY
+   =================================================================== */
+#clickToPlayPrompt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.start-box {
+  background: #2a2a2a;
+  border: 4px solid #555;
+  border-top-color: #888;
+  border-left-color: #888;
+  padding: 24px 32px;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  max-width: 480px;
+}
+
+.start-title {
+  font-size: 22px;
+  color: #ffcc00;
+  text-shadow: 3px 3px 0 #7f6600, -1px -1px 0 #000;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.start-subtitle {
+  font-size: 11px;
+  color: #ccc;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.start-btn {
+  background: #5c912b;
+  border: 2px solid #8cd445;
+  border-bottom-color: #2b4c10;
+  border-right-color: #2b4c10;
+  color: #fff;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 4px 0 #2b4c10;
+}
+
+.start-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #2b4c10;
+}
+
+/* ===================================================================
+   MODALS (CREATIVE INVENTORY & SETTINGS)
+   =================================================================== */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.mc-dialog {
+  background: var(--mc-bg-gray);
+  border: 4px solid #373737;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  color: #222;
+  padding: 16px;
+  border-radius: 4px;
+  max-width: 90vw;
+  max-height: 85vh;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border-bottom: 2px solid #999;
+  padding-bottom: 8px;
+}
+
+.dialog-title {
+  font-size: 14px;
+  color: #222;
+}
+
+.dialog-close {
+  background: #a83232;
+  color: #fff;
+  border: 2px solid #5a1818;
+  border-top-color: #e06c6c;
+  border-left-color: #e06c6c;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  padding: 8px;
+  max-height: 60vh;
+  background: rgba(0, 0, 0, 0.08);
+  border: 2px solid #888;
+  border-radius: 4px;
+}
+
+.inv-item {
+  background: var(--mc-slot-bg);
+  border: 2px solid #5a5a5a;
+  border-top-color: #373737;
+  border-left-color: #373737;
+  border-bottom-color: #fff;
+  border-right-color: #fff;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.1s;
+}
+
+.inv-item:hover {
+  background: rgba(220, 220, 220, 0.85);
+  transform: scale(1.05);
+}
+
+.inv-item img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
+}
+
+.inv-item-name {
+  font-size: 8px;
+  text-align: center;
+  color: #111;
+  word-break: break-word;
+}
+
+/* Settings Form */
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 11px;
+  padding: 8px 4px;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-row input[type="range"] {
+  width: 140px;
+}
+
+.mc-btn {
+  background: #737373;
+  color: #fff;
+  border: 2px solid #222;
+  border-top-color: #aaa;
+  border-left-color: #aaa;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.mc-btn:active {
+  background: #555;
+  border-top-color: #222;
+  border-left-color: #222;
+  border-bottom-color: #aaa;
+  border-right-color: #aaa;
+}
+
+.mc-btn.danger {
+  background: #a83232;
+  border-top-color: #e06c6c;
+  border-left-color: #e06c6c;
+}
+
+/* ===================================================================
+   RESPONSIVE QUERIES
+   =================================================================== */
+@media (max-width: 600px) {
+  .hotbar-slot {
+    width: 34px;
+    height: 34px;
+  }
+  .hotbar-slot img {
+    width: 24px;
+    height: 24px;
+  }
+  #actionButtons {
+    grid-template-columns: repeat(3, 48px);
+    grid-gap: 8px;
+    bottom: 68px;
+  }
+  .action-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 16px;
+  }
+  .hud-info {
+    font-size: 8px;
+  }
+  .hud-btn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+}
